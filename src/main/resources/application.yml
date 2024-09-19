@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres?currentSchema=for_hackathons
+    username: postgres
+    password: 12070107Don
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+openai:
+  api:
+    key: sk-proj-yckwWrogRiGEL1uzi6NET3BlbkFJ81gysZyQ12eC6xwKAXCs
+    url: https://api.openai.com/v1/chat/completions
+

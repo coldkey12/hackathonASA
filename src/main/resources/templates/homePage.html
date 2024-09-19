@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home - Chat Application</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f5f5dc; /* Светлый фон */
+    }
+
+    .card {
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      background-color: white;
+      margin-top: 50px; /* Отступ сверху */
+    }
+
+    .btn-custom {
+      background-color: #8e735b; /* Цвет кнопки */
+      color: white;
+    }
+
+    .btn-custom:hover {
+      background-color: #7c654d; /* Цвет кнопки при наведении */
+    }
+
+    .navbar {
+      background-color: #6c5b4f; /* Более темный цвет навбара */
+    }
+
+    .navbar-nav .nav-link {
+      color: white; /* Белый цвет текста */
+    }
+
+    .navbar-brand {
+      color: white; /* Белый цвет для названия */
+      font-weight: bold; /* Полужирный шрифт */
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <h1 class="text-center mt-5">Welcome to the Chat Application</h1>
+      <div class="card">
+        <div class="card-body text-center">
+          <h4>Add a New Chat</h4>
+          <button class="btn btn-custom w-100" data-bs-toggle="modal" data-bs-target="#addChatModal">Add Chat</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Chat Modal -->
+<div class="modal fade" id="addChatModal" tabindex="-1" aria-labelledby="addChatModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addChatModalLabel">New Chat</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addChatForm">
+          <div class="mb-3">
+            <label for="chatName" class="form-label">Chat Name</label>
+            <input type="text" class="form-control" id="chatName" required>
+          </div>
+          <div class="mb-3">
+            <label for="chatDescription" class="form-label">Description</label>
+            <textarea class="form-control" id="chatDescription" rows="3" required></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-custom" onclick="addChat()">Add Chat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar fixed-bottom navbar-expand-lg">
+  <div class="container-fluid">
+    <a class="navbar-brand" th:text="${currentUser.username}">Current User</a> <!-- Имя пользователя из сессии -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="#">Logout</a> <!-- Кнопка выхода -->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  function addChat() {
+    const chatName = document.getElementById('chatName').value;
+    const chatDescription = document.getElementById('chatDescription').value;
+
+    console.log(`Chat Name: ${chatName}, Description: ${chatDescription}`);
+
+    const modal = bootstrap.Modal.getInstance(document.getElementById('addChatModal'));
+    modal.hide();
+
+    document.getElementById('addChatForm').reset();
+  }
+</script>
+</body>
+</html>
