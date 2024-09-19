@@ -8,26 +8,31 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "USERS")
+@Table(name = "GROUP_CHATS")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User implements Serializable {
+public class GroupChat implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
     private Long id;
 
-    @Column(name = "USERNAME", unique = true, nullable = false)
-    private String username;
+    @Column(name = "GROUP_CHAT_NAME", nullable = false)
+    private String groupChatName;
 
-    @Column(name = "PASSWORD", nullable = false)
-    private String password;
+    @Column(name = "OWNER_ID", nullable = false)
+    private Long ownerId;
 
-    @ManyToMany(mappedBy = "users")
-    private List<GroupChat> groupChats;
+    @ManyToMany
+    @JoinTable(
+            name = "group_chat_users",
+            joinColumns = @JoinColumn(name = "group_chat_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> users;
 
     private LocalDateTime initDate;
 

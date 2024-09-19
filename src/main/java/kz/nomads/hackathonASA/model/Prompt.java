@@ -19,16 +19,19 @@ public class Prompt implements Serializable {
     @Column(name = "ID")
     private Long id;
 
-    @Column(name = "TEXT", unique = true, nullable = false, columnDefinition = "TEXT")
+    @Column(name = "USER_ID", nullable = false)
+    private Long userId;
+
+    @Column(name = "TEXT", nullable = false, columnDefinition = "TEXT")
     private String text;
 
     @Column(name = "CHAT_ID", nullable = false)
     private Long chatId;
 
-    private LocalDateTime joinDate;
+    private LocalDateTime initDate;
 
     @PrePersist
     public void prePersist(){
-        joinDate = LocalDateTime.now();
+        initDate = LocalDateTime.now();
     }
 }

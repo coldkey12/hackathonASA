@@ -1,130 +1,148 @@
-
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat - Chat Application</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      background-color: #e5ddd5;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - Chat Application</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #282c34;
+            color: white;
+            font-family: 'Arial', sans-serif;
+        }
 
-    .chat-container {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      max-width: 800px;
-      margin: auto;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
+        .chat-container {
+            max-height: 70vh;
+            overflow-y: auto;
+            background-color: #3a3f47;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            margin-top: 20px;
+        }
 
-    .chat-header {
-      background-color: #6c5b4f;
-      color: white;
-      padding: 15px;
-      text-align: center;
-      position: relative; /* Добавлено для позиционирования стрелки */
-    }
+        .message {
+            border-radius: 10px;
+            padding: 10px;
+            margin: 5px 0;
+            position: relative;
+            max-width: 75%;
+            word-wrap: break-word;
+        }
 
-    .back-arrow {
-      position: absolute;
-      left: 10px; /* Позиционирование стрелки */
-      top: 15px; /* Позиционирование стрелки */
-      color: white; /* Цвет стрелки */
-      font-size: 24px; /* Размер стрелки */
-      cursor: pointer; /* Указатель при наведении */
-    }
+        .message-user {
+            background-color: #61dafb;
+            color: black;
+            align-self: flex-end;
+            margin-left: auto;
+        }
 
-    .chat-messages {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      background-color: white;
-    }
+        .message-bot {
+            background-color: #ffffff;
+            color: black;
+            align-self: flex-start;
+            margin-right: auto;
+        }
 
-    .message {
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 20px;
-      max-width: 75%;
-      word-wrap: break-word;
-    }
+        .message .timestamp {
+            font-size: 0.8em;
+            color: #aaa;
+            text-align: right;
+            margin-top: 5px;
+        }
 
-    .message.sender {
-      background-color: #dcf8c6;
-      margin-left: auto;
-    }
+        .input-group {
+            margin-top: 10px;
+        }
 
-    .message.receiver {
-      background-color: #ffffff;
-      margin-right: auto;
-    }
+        .btn-custom {
+            background-color: #61dafb;
+            color: black;
+            transition: all 0.3s ease;
+        }
 
-    .chat-input {
-      display: flex;
-      padding: 10px;
-      border-top: 1px solid #ccc;
-      background-color: #f8f8f8;
-    }
+        .btn-custom:hover {
+            background-color: #21a1f1;
+            transform: scale(1.05);
+        }
 
-    .chat-input input {
-      flex: 1;
-      border: none;
-      border-radius: 20px;
-      padding: 10px;
-      margin-right: 10px;
-    }
+        .navbar {
+            background-color: #20232a;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
 
-    .chat-input button {
-      border-radius: 20px;
-      background-color: #6c5b4f;
-      color: white;
-    }
-  </style>
+        .arrow {
+            display: inline-block;
+            margin-right: 10px;
+            transition: transform 0.3s;
+        }
+
+        .arrow:hover {
+            transform: translateX(-5px);
+        }
+
+        .message-row {
+            display: flex;
+            align-items: flex-end;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
-<div class="chat-container">
-  <div class="chat-header">
-    <span class="back-arrow" onclick="goBack()">←</span>
-    <h4>Chat with <span th:text="${currentUser}">User</span></h4>
-  </div>
-  <div class="chat-messages" id="chatMessages"></div>
-  <div class="chat-input">
-    <input type="text" id="chatInput" placeholder="Type your message..." required>
-    <button class="btn" onclick="sendMessage()">Send</button>
-  </div>
+<div th:if="${currentUser == null}">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h1 class="text-center mt-5">404. Not found, try logging in?</h1>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:if="${currentUser != null}" class="content-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h1 class="text-center mt-5">Chat</h1>
+                <div class="chat-container d-flex flex-column" id="chatContainer1">
+                    <!-- Display previous group prompts -->
+                    <div id="promptHistory">
+                        <div th:each="message : ${chatMessages}">
+                            <div class="message-row" th:class="${message.type == 'prompt' ? (message.userId == currentUser.id ? 'message-user' : 'message-other') : 'message-ai'}">
+                                <div class="message">
+                                    <span class="username" th:if="${message.type == 'prompt'}" th:text="${userMap[message.userId]}"></span>
+                                    <span th:text="${message.text}"></span>
+                                    <div class="timestamp" th:text="${#temporals.format(message.initDate, 'dd-MM-yyyy HH:mm')}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="input-group mt-3">
+                    <form method="post" action="/addPrompt">
+                        <input type="text" class="form-control" name="text" id="messageInput"
+                               placeholder="Type your message..." aria-label="Message">
+                        <input type="hidden" name="chatId" th:value="${chat.getId()}">
+                        <input type="hidden" name="userId" th:value="${currentUser.getId()}">
+                        <button type="submit" class="btn btn-custom">Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  function sendMessage() {
-    const input = document.getElementById('chatInput');
-    const message = input.value;
+    <!-- Navbar -->
+    <nav class="navbar fixed-bottom navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="arrow" href="javascript:history.back();">&#8592;</a>
+            <span class="navbar-brand" style="color: white">ChatApp</span>
+        </div>
+    </nav>
 
-    if (message.trim() === '') return;
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-    const messagesDiv = document.getElementById('chatMessages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'message sender';
-    messageDiv.textContent = message;
-    messagesDiv.appendChild(messageDiv);
-
-    input.value = '';
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
-    console.log(`Message sent: ${message}`);
-  }
-
-  function goBack() {
-    window.location.href = '/home'; // Замените '/home' на URL вашей домашней страницы
-  }
-</script>
+</div>
 </body>
 </html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Group Chat - Chat Application</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #282c34;
+      color: white;
+      font-family: 'Arial', sans-serif;
+    }
+
+    .chat-container {
+      max-height: 70vh;
+      overflow-y: auto;
+      background-color: #3a3f47;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      margin-top: 20px;
+    }
+
+    .message {
+      border-radius: 10px;
+      padding: 10px;
+      margin: 5px 0;
+      position: relative;
+      max-width: 75%;
+      word-wrap: break-word;
+    }
+
+    .message-user {
+      background-color: #61dafb;
+      color: black;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    .message-other {
+      background-color: #ffffff;
+      color: black;
+      align-self: flex-start;
+      margin-right: auto;
+    }
+
+    .message .timestamp {
+      font-size: 0.8em;
+      color: #aaa;
+      text-align: right;
+      margin-top: 5px;
+    }
+
+    .message .username {
+      font-weight: bold;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .input-group {
+      margin-top: 10px;
+    }
+
+    .btn-custom {
+      background-color: #61dafb;
+      color: black;
+      transition: all 0.3s ease;
+    }
+
+    .btn-custom:hover {
+      background-color: #21a1f1;
+      transform: scale(1.05);
+    }
+
+    .navbar {
+      background-color: #20232a;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .arrow {
+      display: inline-block;
+      margin-right: 10px;
+      transition: transform 0.3s;
+    }
+
+    .arrow:hover {
+      transform: translateX(-5px);
+    }
+
+    .message-row {
+      display: flex;
+      align-items: flex-end;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+<div th:if="${currentUser == null}">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <h1 class="text-center mt-5">404. Not found, try logging in?</h1>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div th:if="${currentUser != null}" class="content-wrapper">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <h1 class="text-center mt-5">Group Chat</h1>
+        <div class="chat-container d-flex flex-column" id="chatContainer1">
+          <!-- Display previous group prompts -->
+          <div id="groupPromptHistory">
+            <div th:each="prompt : ${groupPromptList}">
+              <div class="message-row" th:class="${prompt.userId == currentUser.id} ? 'message-user' : 'message-other'">
+                <div class="message">
+                  <span class="username" th:text="${userMap[prompt.userId]}"></span>
+                  <span th:text="${prompt.text}"></span>
+                  <div class="timestamp" th:text="${#temporals.format(prompt.initDate, 'dd-MM-yyyy HH:mm')}"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="input-group mt-3">
+          <form method="post" action="/addGroupPrompt">
+            <input type="text" class="form-control" name="text" id="messageInput"
+                   placeholder="Type your message..." aria-label="Message">
+            <input type="hidden" name="chatId" th:value="${groupChat.getId()}">
+            <input type="hidden" name="userId" th:value="${currentUser.getId()}">
+            <button type="submit" class="btn btn-custom">Send</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Navbar -->
+<nav class="navbar fixed-bottom navbar-expand-lg">
+  <div class="container-fluid">
+    <a class="arrow" href="javascript:history.back();">&#8592;</a>
+    <span class="navbar-brand" style="color: white">Group chat with AI</span>
+  </div>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+</div>
+</body>
+</html>

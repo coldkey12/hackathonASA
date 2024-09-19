@@ -25,10 +25,10 @@ public class AIResponse implements Serializable {
     @Column(name = "CHAT_ID", nullable = false)
     private Long chatId;
 
-    private LocalDateTime joinDate;
+    private LocalDateTime initDate;
 
     @PrePersist
     public void prePersist(){
-        joinDate = LocalDateTime.now();
+        initDate = LocalDateTime.now();
     }
 }

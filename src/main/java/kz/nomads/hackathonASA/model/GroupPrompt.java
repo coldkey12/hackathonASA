@@ -5,29 +5,28 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
-@Table(name = "USERS")
+@Table(name = "GROUP_PROMPTS")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User implements Serializable {
+public class GroupPrompt implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
     private Long id;
 
-    @Column(name = "USERNAME", unique = true, nullable = false)
-    private String username;
+    @Column(name = "TEXT", nullable = false, columnDefinition = "TEXT")
+    private String text;
 
-    @Column(name = "PASSWORD", nullable = false)
-    private String password;
+    @Column(name = "USER_ID", nullable = false)
+    private Long userId;
 
-    @ManyToMany(mappedBy = "users")
-    private List<GroupChat> groupChats;
+    @Column(name = "CHAT_ID", nullable = false)
+    private Long chatId;
 
     private LocalDateTime initDate;
 

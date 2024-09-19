@@ -19,13 +19,16 @@ public class Chat implements Serializable {
     @Column(name = "ID")
     private Long id;
 
+    @Column(name = "CHAT_NAME", nullable = false)
+    private String chatName;
+
     @Column(name = "USER_ID", nullable = false)
     private Long userId;
 
-    private LocalDateTime postDate;
+    private LocalDateTime initDate;
 
     @PrePersist
     public void prePersist(){
-        postDate = LocalDateTime.now();
+        initDate = LocalDateTime.now();
     }
 }
