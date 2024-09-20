@@ -121,7 +121,7 @@
   </div>
 </div>
 
-<div th:if="${currentUser != null}" class="content-wrapper">
+<div th:if="${currentUser != null}" class="content-wrapper mb-5">
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-md-8">
@@ -131,9 +131,12 @@
             <div class="chat-container d-flex flex-column" id="chatContainer1">
               <div id="promptHistory">
                 <div th:each="prompt : ${groupPromptList}">
-                  <div class="message-row" th:class="${prompt.userId == currentUser.id ? 'message-user' : 'message-other'}">
+                  <div class="message-row"
+                       th:class="${prompt.userId == currentUser.id ? 'message-user' : 'message-other'}">
                     <div class="message">
-                      <span class="username" th:text="${userMap[prompt.userId]}">:</span>
+                      <div>
+                        <span class="username" th:text="${allUsers.get(prompt.userId - 1).getUsername()}"></span>
+                      </div>
                       <span th:text="${prompt.text}"></span>
                       <div class="timestamp" th:text="${#temporals.format(prompt.initDate, 'dd-MM-yyyy HH:mm')}"></div>
                     </div>
@@ -156,6 +159,13 @@
                 <input type="hidden" name="chatId" th:value="${groupChat.getId()}">
                 <input type="hidden" name="userId" th:value="${currentUser.getId()}">
                 <button type="submit" class="btn btn-custom">Send</button>
+                <div class="form-group mt-3">
+                  <label for="aiStatus">AI Status</label>
+                  <select class="form-select" id="aiStatus" name="aiStatus">
+                    <option value="OFF">OFF</option>
+                    <option value="ON">ON</option>
+                  </select>
+                </div>
               </form>
             </div>
           </div>
@@ -170,6 +180,11 @@
               <button type="button" class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#addUserModal">
                 Add User
               </button>
+              <form action="/deleteGroupChat" method="post">
+                <button type="submit" class="btn btn-danger mt-3" onclick="deleteChat()">
+                  Delete Chat
+                </button>
+              </form>
             </div>
           </div>
         </div>
@@ -212,8 +227,24 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+  // Toggle switch functionality
+  const userSwitch = document.getElementById('userSwitch');
+  const switchValue = document.getElementById('switchValue');
+
+  userSwitch.addEventListener('change', function() {
+    switchValue.textContent = userSwitch.checked ? 'ON' : 'OFF';
+  });
+
   function deleteUser() {
     alert("Delete User functionality is not implemented yet.");
+  }
+
+  function deleteChat() {
+    const confirmation = confirm("Are you sure you want to delete this chat?");
+    if (confirmation) {
+      // Implement the actual delete logic, e.g., making a DELETE request
+      alert("Chat deleted.");
+    }
   }
 </script>
 

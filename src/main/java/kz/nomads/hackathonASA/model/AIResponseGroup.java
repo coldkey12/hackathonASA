@@ -19,7 +19,7 @@ public class AIResponseGroup implements Serializable {
     @Column(name = "ID")
     private Long id;
 
-    @Column(name = "TEXT", unique = true, nullable = false, columnDefinition = "TEXT")
+    @Column(name = "TEXT", nullable = false, columnDefinition = "TEXT")
     private String text;
 
     @Column(name = "PROMPT_TEXT", unique = true, nullable = false, columnDefinition = "TEXT")

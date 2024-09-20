@@ -62,7 +62,7 @@ public class HomeController {
             System.out.println(nonOwnerGroups.size() + " SIZE OF NON OWNER");
 
             for (GroupChat gc : groupChats) {
-                if (gc.getUsers().contains(user) && gc.getOwnerId()!=user.getId() ) {
+                if (gc.getUsers().contains(user) && gc.getOwnerId() != user.getId()) {
                     nonOwnerGroups.add(gc);
                 }
             }
@@ -78,7 +78,6 @@ public class HomeController {
         model.addAttribute("currentUser", user);
         return "homePage";
     }
-
 
 
     @GetMapping("/loginPage")
@@ -205,6 +204,9 @@ public class HomeController {
 
         List<AIResponseGroup> aiResponseList = aiResponseGroupService.getAIResponsesByChatId(chatId);
 
+        List<User> allUsers = userService.getAllUsers();
+
+        model.addAttribute("allUsers", allUsers);
         model.addAttribute("allGroups", groupChatList);
         model.addAttribute("aiResponseList", aiResponseList);
         model.addAttribute("groupChat", groupChat);
@@ -215,28 +217,30 @@ public class HomeController {
     }
 
 
-
     @PostMapping("/addGroupPrompt")
-    public String addGroupPrompt(GroupPrompt groupPrompt, HttpServletRequest req) {
+    public String addGroupPrompt(GroupPrompt groupPrompt, HttpServletRequest req,@RequestParam String aiStatus) {
         User user = (User) req.getSession().getAttribute("currentUser");
         groupPrompt.setUserId(user.getId());
 
-        ChatCompletionRequest chatCompletionRequest =
-                new ChatCompletionRequest("gpt-3.5-turbo", groupPrompt.getText());
+        if (aiStatus.equals("ON")) {
+            ChatCompletionRequest chatCompletionRequest =
+                    new ChatCompletionRequest("gpt-3.5-turbo", groupPrompt.getText());
 
-        ChatCompletionResponse response =
-                restTemplate.postForObject(url, chatCompletionRequest,
-                        ChatCompletionResponse.class);
+            ChatCompletionResponse response =
+                    restTemplate.postForObject(url, chatCompletionRequest,
+                            ChatCompletionResponse.class);
 
-        String answer = response.getChoices().get(0).getMessage().getContent();
+            String answer = response.getChoices().get(0).getMessage().getContent();
 
-        AIResponseGroup aiResponse = AIResponseGroup.builder()
-                .text(answer)
-                .chatId(groupPrompt.getChatId())
-                .promptText(groupPrompt.getText())
-                .build();
+            AIResponseGroup aiResponse = AIResponseGroup.builder()
+                    .text(answer)
+                    .chatId(groupPrompt.getChatId())
+                    .promptText(groupPrompt.getText())
+                    .build();
 
-        aiResponseGroupService.addResponse(aiResponse);
+            aiResponseGroupService.addResponse(aiResponse);
+        }
+
         groupPromptService.addGroupPrompt(groupPrompt);
         return "redirect:/openGroupChat/" + groupPrompt.getChatId();
     }
@@ -256,7 +260,7 @@ public class HomeController {
     //////////////////////////////////////////////////////////////////
 
     @PostMapping("/addUserToGroup")
-    public String addUserToGroup(@RequestParam String username,@RequestParam Long groupId, HttpServletRequest req, Model model) {
+    public String addUserToGroup(@RequestParam String username, @RequestParam Long groupId, HttpServletRequest req, Model model) {
         User user = userService.getUserByUsername(username);
         model.addAttribute("currentUser", user);
         User currentUser = (User) req.getSession().getAttribute("currentUser");
