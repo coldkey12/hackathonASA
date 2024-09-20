@@ -34,4 +34,8 @@ public class GroupChatService {
     public List<GroupChat> findAll() {
         return groupChatRepository.findAll();
     }
+
+    public void deleteGroupChat(Long chatId) {
+        groupChatRepository.deleteById(chatId);
+    }
 }

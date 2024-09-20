@@ -287,4 +287,14 @@ public class HomeController {
         return "redirect:/openGroupChat/" + groupId;
 
     }
+
+    @PostMapping("/deleteGroupChat")
+    public String deleteGroupChat(@RequestParam Long chatId, HttpServletRequest req) {
+        User currentUser = (User) req.getSession().getAttribute("currentUser");
+        if(groupChatService.getGroupChatById(chatId).get().getOwnerId().equals(currentUser.getId())) {
+            groupChatService.deleteGroupChat(chatId);
+            return "redirect:/homePage";
+        }
+        return "redirect:/homePage";
+    }
 }
