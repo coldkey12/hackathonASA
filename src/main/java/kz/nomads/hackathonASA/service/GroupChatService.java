@@ -26,4 +26,12 @@ public class GroupChatService {
     public List<GroupChat> getGroupChatByUserId(Long id) {
         return groupChatRepository.getGroupChatByOwnerId(id);
     }
+
+    public void saveGroupChat(GroupChat groupChat) {
+        groupChatRepository.save(groupChat);
+    }
+
+    public List<GroupChat> findAll() {
+        return groupChatRepository.findAll();
+    }
 }

@@ -6,6 +6,7 @@ import kz.nomads.hackathonASA.model.*;
 import kz.nomads.hackathonASA.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -13,9 +14,10 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-@RestController
+@Controller
 public class HomeController {
 
     @Value("${openai.api.url}")
@@ -23,6 +25,9 @@ public class HomeController {
 
     @Autowired
     AIResponseService aiResponseService;
+
+    @Autowired
+    AIResponseGroupService aiResponseGroupService;
 
     @Autowired
     RestTemplate restTemplate;
@@ -45,16 +50,36 @@ public class HomeController {
     public String homePage(Model model, HttpServletRequest req) {
         HttpSession session = req.getSession();
         User user = (User) session.getAttribute("currentUser");
+
         if (user != null) {
             List<Chat> chatsByUserId = chatService.chatsByUserId(user.getId());
             System.out.println(chatsByUserId.size());
-            List<GroupChat> groupChats = groupChatService.getGroupChatByUserId(user.getId());
+
+            List<GroupChat> groupChats = groupChatService.findAll();
+
+            List<GroupChat> nonOwnerGroups = new ArrayList<>();
+
+            System.out.println(nonOwnerGroups.size() + " SIZE OF NON OWNER");
+
+            for (GroupChat gc : groupChats) {
+                if (gc.getUsers().contains(user) && gc.getOwnerId()!=user.getId() ) {
+                    nonOwnerGroups.add(gc);
+                }
+            }
+
+            System.out.println(nonOwnerGroups.size() + " SIZE OF NON OWNER");
+
             model.addAttribute("groupChats", groupChats);
+            model.addAttribute("nonOwnerGroups", nonOwnerGroups); // Pass non-owner groups to the model
             model.addAttribute("chats", chatsByUserId);
+            System.out.println(nonOwnerGroups.size() + " size of non owner groups");
         }
+
         model.addAttribute("currentUser", user);
         return "homePage";
     }
+
+
 
     @GetMapping("/loginPage")
     public String loginPage() {
@@ -92,6 +117,10 @@ public class HomeController {
         return "registerPage";
     }
 
+
+    //////////////////////////////////////
+
+
     @GetMapping("/openChat/{chatId}")
     public String openChat(@PathVariable Long chatId, Model model, HttpServletRequest req) {
         User user = (User) req.getSession().getAttribute("currentUser");
@@ -105,6 +134,8 @@ public class HomeController {
         Map<Long, String> userMap = userList.stream()
                 .collect(Collectors.toMap(User::getId, User::getUsername));
 
+        model.addAttribute("promptList", promptList);
+        model.addAttribute("aiResponseList", aiResponseList);
         model.addAttribute("chat", chat);
         model.addAttribute("currentUser", user);
         model.addAttribute("userMap", userMap); // Add the user map to the model
@@ -123,11 +154,12 @@ public class HomeController {
                 restTemplate.postForObject(url, chatCompletionRequest,
                         ChatCompletionResponse.class);
 
-        String answer =  response.getChoices().get(0).getMessage().getContent();
+        String answer = response.getChoices().get(0).getMessage().getContent();
 
         AIResponse aiResponse = AIResponse.builder()
                 .text(answer)
                 .chatId(prompt.getChatId())
+                .promptText(prompt.getText())
                 .build();
 
         aiResponseService.addResponse(aiResponse);
@@ -142,6 +174,8 @@ public class HomeController {
         return "redirect:/openChat/{" + chatId + "}";
     }
 
+    ////////////////////////////////////////////
+
     @GetMapping("/logout")
     public String logout(HttpServletRequest req) {
         HttpSession session = req.getSession();
@@ -155,36 +189,60 @@ public class HomeController {
         return "redirect:/homePage";
     }
 
-    @GetMapping("/openGroupChat/{id}")
-    public String getGroupChat(@PathVariable Long id, Model model, HttpServletRequest req) {
+    @GetMapping("/openGroupChat/{chatId}")
+    public String getGroupChat(@PathVariable Long chatId, Model model, HttpServletRequest req) {
         User user = (User) req.getSession().getAttribute("currentUser");
-        GroupChat groupChat = groupChatService.getGroupChatById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid group chat Id:" + id));
-        List<GroupPrompt> groupPromptList = groupPromptService.getGroupPromptListByChatId(id);
-        List<User> userList = userService.getAllUsers();
+        List<GroupChat> groupChatList = groupChatService.findAll();
+        GroupChat groupChat = groupChatService.getGroupChatById(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid group chat Id:" + chatId));
 
-        // Create a map of user IDs to usernames
-        Map<Long, String> userMap = userList.stream()
+        List<GroupPrompt> groupPromptList = groupPromptService.getGroupPromptListByChatId(chatId);
+
+        List<User> groupChatUsers = groupChat.getUsers(); // Ensure this method exists in GroupChat
+
+        Map<Long, String> userMap = groupChatUsers.stream()
                 .collect(Collectors.toMap(User::getId, User::getUsername));
 
+        List<AIResponseGroup> aiResponseList = aiResponseGroupService.getAIResponsesByChatId(chatId);
+
+        model.addAttribute("allGroups", groupChatList);
+        model.addAttribute("aiResponseList", aiResponseList);
         model.addAttribute("groupChat", groupChat);
         model.addAttribute("groupPromptList", groupPromptList);
         model.addAttribute("currentUser", user);
-        model.addAttribute("userMap", userMap); // Add the user map to the model
+        model.addAttribute("userMap", userMap); // Add the filtered user map to the model
         return "groupChat";
     }
+
 
 
     @PostMapping("/addGroupPrompt")
     public String addGroupPrompt(GroupPrompt groupPrompt, HttpServletRequest req) {
         User user = (User) req.getSession().getAttribute("currentUser");
         groupPrompt.setUserId(user.getId());
+
+        ChatCompletionRequest chatCompletionRequest =
+                new ChatCompletionRequest("gpt-3.5-turbo", groupPrompt.getText());
+
+        ChatCompletionResponse response =
+                restTemplate.postForObject(url, chatCompletionRequest,
+                        ChatCompletionResponse.class);
+
+        String answer = response.getChoices().get(0).getMessage().getContent();
+
+        AIResponseGroup aiResponse = AIResponseGroup.builder()
+                .text(answer)
+                .chatId(groupPrompt.getChatId())
+                .promptText(groupPrompt.getText())
+                .build();
+
+        aiResponseGroupService.addResponse(aiResponse);
         groupPromptService.addGroupPrompt(groupPrompt);
         return "redirect:/openGroupChat/" + groupPrompt.getChatId();
     }
 
     @PostMapping("/hitOpenAi")
-    public String getOpenaiResponse(@RequestBody String prompt){
+    public String getOpenaiResponse(@RequestBody String prompt) {
         ChatCompletionRequest chatCompletionRequest =
                 new ChatCompletionRequest("gpt-3.5-turbo", prompt);
 
@@ -193,5 +251,36 @@ public class HomeController {
                         ChatCompletionResponse.class);
 
         return response.getChoices().get(0).getMessage().getContent();
+    }
+
+    //////////////////////////////////////////////////////////////////
+
+    @PostMapping("/addUserToGroup")
+    public String addUserToGroup(@RequestParam String username,@RequestParam Long groupId, HttpServletRequest req, Model model) {
+        User user = userService.getUserByUsername(username);
+        model.addAttribute("currentUser", user);
+        User currentUser = (User) req.getSession().getAttribute("currentUser");
+
+        if (user == null) {
+            req.setAttribute("error", "User not found.");
+            return "redirect:/openGroupChat/" + groupId;
+        }
+        Optional<GroupChat> groupChat = groupChatService.getGroupChatById(groupId);
+
+        if (groupChat.isEmpty()) {
+            req.setAttribute("error", "Group chat not found.");
+            return "redirect:/homePage";
+        }
+
+        if (groupChat.get().getUsers().contains(user) || user.getId().equals(currentUser.getId())) {
+            req.setAttribute("error", "User is already in the group.");
+            return "redirect:/openGroupChat/" + groupId;
+        }
+
+        groupChat.get().getUsers().add(user);
+        groupChatService.saveGroupChat(groupChat.orElse(null));
+
+        return "redirect:/openGroupChat/" + groupId;
+
     }
 }

@@ -109,15 +109,54 @@
                     <ul class="list-group">
                         <li class="list-group-item d-flex justify-content-between align-items-center"
                             th:each="groupChat : ${groupChats}">
-                            <div>
-                                <strong th:text="${groupChat.groupChatName}">Group Chat Name</strong>
-                                <p th:text="${#temporals.format(groupChat.initDate, 'dd-MM-yyyy HH:mm')}"></p>
+                            <div th:if="${groupChat.getOwnerId()==currentUser.getId()}">
+                                <div>
+                                    <strong th:text="${groupChat.groupChatName}">Group Chat Name</strong>
+                                    <p th:text="${#temporals.format(groupChat.initDate, 'dd-MM-yyyy HH:mm')}"></p>
+                                </div>
+                                <a th:href="@{/openGroupChat/{id}(id=${groupChat.id})}" class="btn btn-custom">Open
+                                    Group
+                                    Chat</a>
                             </div>
-                            <a th:href="@{/openGroupChat/{id}(id=${groupChat.id})}" class="btn btn-custom">Open Group
-                                Chat</a>
                         </li>
                     </ul>
                 </div>
+
+                <div class="container">
+                    <hr class="my-7" style="border-color: white; border-bottom-width: 10px"> <!-- Line Separator -->
+                </div>
+
+                <!-- Group Not Owner Chat Modal Button -->
+                <!--                <div class="card mt-3">-->
+                <!--                    <div class="card-body text-center">-->
+                <!--                        <h4>Group chats you're in</h4>-->
+                <!--                    </div>-->
+                <!--                </div>-->
+
+                <div class="mt-5">
+                    <h4>Group Chats you're in</h4>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center"
+                            th:each="groupChat : ${groupChats}">
+                            <div th:each="user : ${groupChat.getUsers()}">
+                                <div th:if="${user.getId()==currentUser.getId()}">
+                                    <div>
+                                        <strong th:text="${groupChat.groupChatName}">Group Chat Name</strong>
+                                        <p th:text="${#temporals.format(groupChat.initDate, 'dd-MM-yyyy HH:mm')}"></p>
+                                    </div>
+                                    <a th:href="@{/openGroupChat/{id}(id=${groupChat.id})}" class="btn btn-custom">Open
+                                        Group
+                                        Chat</a>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="container">
+                    <hr class="my-7" style="border-color: white; border-bottom-width: 10px"> <!-- Line Separator -->
+                </div>
+
             </div>
         </div>
     </div>

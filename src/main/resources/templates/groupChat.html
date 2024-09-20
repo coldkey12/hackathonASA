@@ -22,6 +22,35 @@
       margin-top: 20px;
     }
 
+    .user-list {
+      background-color: #20232a;
+      padding: 15px;
+      border-radius: 15px;
+      max-height: 70vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      margin-top: 20px;
+    }
+
+    .user-list h3 {
+      margin-bottom: 15px;
+      color: #61dafb;
+    }
+
+    .user-list ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .user-list ul li {
+      margin: 10px 0;
+      padding: 10px;
+      background-color: #3a3f47;
+      border-radius: 10px;
+      word-wrap: break-word;
+      font-size: 1.1em;
+    }
+
     .message {
       border-radius: 10px;
       padding: 10px;
@@ -29,20 +58,6 @@
       position: relative;
       max-width: 75%;
       word-wrap: break-word;
-    }
-
-    .message-user {
-      background-color: #61dafb;
-      color: black;
-      align-self: flex-end;
-      margin-left: auto;
-    }
-
-    .message-other {
-      background-color: #ffffff;
-      color: black;
-      align-self: flex-start;
-      margin-right: auto;
     }
 
     .message .timestamp {
@@ -106,52 +121,101 @@
   </div>
 </div>
 
-
-
 <div th:if="${currentUser != null}" class="content-wrapper">
   <div class="container">
     <div class="row justify-content-center">
-      <div class="col-md-6">
+      <div class="col-md-8">
         <h1 class="text-center mt-5">Group Chat</h1>
-        <div class="chat-container d-flex flex-column" id="chatContainer1">
-          <!-- Display previous group prompts -->
-          <div id="groupPromptHistory">
-            <div th:each="prompt : ${groupPromptList}">
-              <div class="message-row" th:class="${prompt.userId == currentUser.id} ? 'message-user' : 'message-other'">
-                <div class="message">
-                  <span class="username" th:text="${userMap[prompt.userId]}"></span>
-                  <span th:text="${prompt.text}"></span>
-                  <div class="timestamp" th:text="${#temporals.format(prompt.initDate, 'dd-MM-yyyy HH:mm')}"></div>
+        <div class="row">
+          <div class="col-md-8">
+            <div class="chat-container d-flex flex-column" id="chatContainer1">
+              <div id="promptHistory">
+                <div th:each="prompt : ${groupPromptList}">
+                  <div class="message-row" th:class="${prompt.userId == currentUser.id ? 'message-user' : 'message-other'}">
+                    <div class="message">
+                      <span class="username" th:text="${userMap[prompt.userId]}">:</span>
+                      <span th:text="${prompt.text}"></span>
+                      <div class="timestamp" th:text="${#temporals.format(prompt.initDate, 'dd-MM-yyyy HH:mm')}"></div>
+                    </div>
+                  </div>
+                  <div th:each="aiResponse : ${aiResponseList}"
+                       th:if="${aiResponse.chatId == prompt.chatId && aiResponse.promptText == prompt.text}"
+                       class="message-row message-ai">
+                    <div class="message">
+                      <span class="username">(AI):</span>
+                      <span th:text="${aiResponse.text}"></span>
+                      <div class="timestamp" th:text="${#temporals.format(aiResponse.initDate, 'dd-MM-yyyy HH:mm')}"></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+            <div class="input-group mt-3">
+              <form method="post" action="/addGroupPrompt">
+                <input type="text" class="form-control" name="text" id="messageInput" placeholder="Type your message..." aria-label="Message">
+                <input type="hidden" name="chatId" th:value="${groupChat.getId()}">
+                <input type="hidden" name="userId" th:value="${currentUser.getId()}">
+                <button type="submit" class="btn btn-custom">Send</button>
+              </form>
+            </div>
           </div>
-        </div>
-        <div class="input-group mt-3">
-          <form method="post" action="/addGroupPrompt">
-            <input type="text" class="form-control" name="text" id="messageInput"
-                   placeholder="Type your message..." aria-label="Message">
-            <input type="hidden" name="chatId" th:value="${groupChat.getId()}">
-            <input type="hidden" name="userId" th:value="${currentUser.getId()}">
-            <button type="submit" class="btn btn-custom">Send</button>
-          </form>
+
+          <div class="col-md-4">
+            <div class="user-list">
+              <h3>Group Members</h3>
+              <ul>
+                <li th:each="user : ${userMap}" th:text="${user.value}"></li>
+              </ul>
+              <!-- Button to trigger modal -->
+              <button type="button" class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                Add User
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Add User Modal -->
+<div th:if="${groupChat.getOwnerId() == currentUser.getId()}" class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addUserModalLabel">Add User to Group</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="/addUserToGroup">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" placeholder="Enter username">
+          </div>
+          <input type="hidden" name="groupId" th:value="${groupChat.getId()}">
+          <button type="submit" class="btn btn-custom">Add User</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Navbar -->
 <nav class="navbar fixed-bottom navbar-expand-lg">
   <div class="container-fluid">
-    <a class="arrow" href="javascript:history.back();">&#8592;</a>
-    <span class="navbar-brand" style="color: white">Group chat with AI</span>
+    <a class="text" href="/homePage">Back to homepage</a>
+    <span class="navbar-brand" style="color: white">Group Chat with AI</span>
   </div>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
-</div>
+<script>
+  function deleteUser() {
+    alert("Delete User functionality is not implemented yet.");
+  }
+</script>
+
 </body>
 </html>

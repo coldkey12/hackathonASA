@@ -12,6 +12,24 @@
             font-family: 'Arial', sans-serif;
         }
 
+        .message {
+            border-radius: 15px; /* Increase the roundness */
+            padding: 10px;
+            margin: 5px 0;
+            position: relative;
+            max-width: 75%;
+            word-wrap: break-word;
+            display: inline-block;
+        }
+
+        .message-ai {
+            background-color: rgba(220, 220, 220, 0.2);
+            color: black;
+            align-self: flex-start;
+            margin-right: auto;
+            border: 1px solid rgba(0, 0, 0, 0.3);
+        }
+
         .chat-container {
             max-height: 70vh;
             overflow-y: auto;
@@ -22,30 +40,7 @@
             margin-top: 20px;
         }
 
-        .message {
-            border-radius: 10px;
-            padding: 10px;
-            margin: 5px 0;
-            position: relative;
-            max-width: 75%;
-            word-wrap: break-word;
-        }
-
-        .message-user {
-            background-color: #61dafb;
-            color: black;
-            align-self: flex-end;
-            margin-left: auto;
-        }
-
-        .message-bot {
-            background-color: #ffffff;
-            color: black;
-            align-self: flex-start;
-            margin-right: auto;
-        }
-
-        .message .timestamp {
+        .timestamp {
             font-size: 0.8em;
             color: #aaa;
             text-align: right;
@@ -105,43 +100,53 @@
             <div class="col-md-6">
                 <h1 class="text-center mt-5">Chat</h1>
                 <div class="chat-container d-flex flex-column" id="chatContainer1">
-                    <!-- Display previous group prompts -->
+                    <!-- Display prompts and corresponding AI responses -->
                     <div id="promptHistory">
-                        <div th:each="message : ${chatMessages}">
-                            <div class="message-row" th:class="${message.type == 'prompt' ? (message.userId == currentUser.id ? 'message-user' : 'message-other') : 'message-ai'}">
+                        <div th:each="prompt : ${promptList}">
+                            <div class="message-row"
+                                 th:class="${prompt.userId == currentUser.id ? 'message-user' : 'message-other'}">
                                 <div class="message">
-                                    <span class="username" th:if="${message.type == 'prompt'}" th:text="${userMap[message.userId]}"></span>
-                                    <span th:text="${message.text}"></span>
-                                    <div class="timestamp" th:text="${#temporals.format(message.initDate, 'dd-MM-yyyy HH:mm')}"></div>
+                                    <span class="username" th:text="${userMap[prompt.userId]}">:</span>
+                                    <span th:text="${prompt.text}"></span>
+                                    <div class="timestamp" th:text="${#temporals.format(prompt.initDate, 'dd-MM-yyyy HH:mm')}"></div>
+                                </div>
+                            </div>
+                            <div th:each="aiResponse : ${aiResponseList}"
+                                 th:if="${aiResponse.chatId == prompt.chatId && aiResponse.promptText == prompt.text}"
+                                 class="message-row message-ai">
+                                <div class="message">
+                                    <span class="username">(AI):</span>
+                                    <span th:text="${aiResponse.text}"></span>
+                                    <div class="timestamp" th:text="${#temporals.format(aiResponse.initDate, 'dd-MM-yyyy HH:mm')}"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                </div>
-                <div class="input-group mt-3">
-                    <form method="post" action="/addPrompt">
-                        <input type="text" class="form-control" name="text" id="messageInput"
-                               placeholder="Type your message..." aria-label="Message">
-                        <input type="hidden" name="chatId" th:value="${chat.getId()}">
-                        <input type="hidden" name="userId" th:value="${currentUser.getId()}">
-                        <button type="submit" class="btn btn-custom">Send</button>
-                    </form>
+                    <div class="input-group mt-3">
+                        <form method="post" action="/addPrompt">
+                            <input type="text" class="form-control" name="text" id="messageInput"
+                                   placeholder="Type your message..." aria-label="Message">
+                            <input type="hidden" name="chatId" th:value="${chat.getId()}">
+                            <input type="hidden" name="userId" th:value="${currentUser.getId()}">
+                            <button type="submit" class="btn btn-custom">Send</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-    <!-- Navbar -->
-    <nav class="navbar fixed-bottom navbar-expand-lg">
-        <div class="container-fluid">
-            <a class="arrow" href="javascript:history.back();">&#8592;</a>
-            <span class="navbar-brand" style="color: white">ChatApp</span>
-        </div>
-    </nav>
+<!-- Navbar -->
+<nav class="navbar fixed-bottom navbar-expand-lg">
+    <div class="container-fluid">
+        <a class="text" href="/homePage">Back to homepage</a>
+        <span class="navbar-brand" style="color: white">ChatApp</span>
+    </div>
+</nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 </div>
 </body>
