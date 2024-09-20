@@ -180,11 +180,14 @@
               <button type="button" class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#addUserModal">
                 Add User
               </button>
+
               <form action="/deleteGroupChat" method="post">
-                <button type="submit" class="btn btn-danger mt-3" onclick="deleteChat()">
+                <input type="hidden" name="chatId" th:value="${chatId}"></input>
+                <button type="submit" class="btn btn-danger mt-3">
                   Delete Chat
                 </button>
               </form>
+
             </div>
           </div>
         </div>
@@ -239,13 +242,7 @@
     alert("Delete User functionality is not implemented yet.");
   }
 
-  function deleteChat() {
-    const confirmation = confirm("Are you sure you want to delete this chat?");
-    if (confirmation) {
-      // Implement the actual delete logic, e.g., making a DELETE request
-      alert("Chat deleted.");
-    }
-  }
+
 </script>
 
 </body>
