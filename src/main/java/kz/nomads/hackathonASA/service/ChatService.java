@@ -26,4 +26,8 @@ public class ChatService {
     public Optional<Chat> getChatById(Long chatId) {
         return chatRepository.findById(chatId);
     }
+
+    public void deleteChat(Long chatId) {
+        chatRepository.deleteById(chatId);
+    }
 }

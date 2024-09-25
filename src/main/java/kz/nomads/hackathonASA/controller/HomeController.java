@@ -123,22 +123,27 @@ public class HomeController {
     @GetMapping("/openChat/{chatId}")
     public String openChat(@PathVariable Long chatId, Model model, HttpServletRequest req) {
         User user = (User) req.getSession().getAttribute("currentUser");
-        Chat chat = chatService.getChatById(chatId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid group chat Id:" + chatId));
-        List<Prompt> promptList = promptService.getPromptListByChatId(chatId);
-        List<User> userList = userService.getAllUsers();
-        List<AIResponse> aiResponseList = aiResponseService.getAIResponsesByChatId(chatId);
 
-        // Create a map of user IDs to usernames
-        Map<Long, String> userMap = userList.stream()
-                .collect(Collectors.toMap(User::getId, User::getUsername));
+        if(user != null && chatService.getChatById(chatId).isPresent()) {
+            Chat chat = chatService.getChatById(chatId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid group chat Id:" + chatId));
+            List<Prompt> promptList = promptService.getPromptListByChatId(chatId);
+            List<User> userList = userService.getAllUsers();
+            List<AIResponse> aiResponseList = aiResponseService.getAIResponsesByChatId(chatId);
 
-        model.addAttribute("promptList", promptList);
-        model.addAttribute("aiResponseList", aiResponseList);
-        model.addAttribute("chat", chat);
-        model.addAttribute("currentUser", user);
-        model.addAttribute("userMap", userMap); // Add the user map to the model
-        return "chatPage";
+            // Create a map of user IDs to usernames
+            Map<Long, String> userMap = userList.stream()
+                    .collect(Collectors.toMap(User::getId, User::getUsername));
+
+            model.addAttribute("promptList", promptList);
+            model.addAttribute("aiResponseList", aiResponseList);
+            model.addAttribute("chat", chat);
+            model.addAttribute("currentUser", user);
+            model.addAttribute("userMap", userMap); // Add the user map to the model
+            return "chatPage";
+        } else {
+            return "redirect:/homePage";
+        }
     }
 
     @PostMapping("/addPrompt")
@@ -213,6 +218,7 @@ public class HomeController {
         model.addAttribute("groupPromptList", groupPromptList);
         model.addAttribute("currentUser", user);
         model.addAttribute("userMap", userMap); // Add the filtered user map to the model
+
         return "groupChat";
     }
 
@@ -293,6 +299,16 @@ public class HomeController {
         User currentUser = (User) req.getSession().getAttribute("currentUser");
         if(groupChatService.getGroupChatById(chatId).get().getOwnerId().equals(currentUser.getId())) {
             groupChatService.deleteGroupChat(chatId);
+            return "redirect:/homePage";
+        }
+        return "redirect:/homePage";
+    }
+
+    @PostMapping("/deleteChat")
+    public String deleteChat(@RequestParam Long chatId, HttpServletRequest req) {
+        User currentUser = (User) req.getSession().getAttribute("currentUser");
+        if(chatService.getChatById(chatId).get().getUserId().equals(currentUser.getId())) {
+            chatService.deleteChat(chatId);
             return "redirect:/homePage";
         }
         return "redirect:/homePage";

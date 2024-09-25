@@ -123,6 +123,13 @@
                         </div>
                     </div>
 
+                    <form action="/deleteChat" method="post">
+                        <input type="hidden" name="chatId" th:value="${chatId}"></input>
+                        <button type="submit" class="btn btn-danger mt-3">
+                            Delete Chat
+                        </button>
+                    </form>
+
                     <div class="input-group mt-3">
                         <form method="post" action="/addPrompt">
                             <input type="text" class="form-control" name="text" id="messageInput"
