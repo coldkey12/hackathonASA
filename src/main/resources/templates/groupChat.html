@@ -123,7 +123,7 @@
     </div>
 </div>
 
-<div th:if="${groupChat.getUsers().contains(currentUser)}">
+<div th:if="${groupChat.getUsers().contains(currentUser)!=null || groupChat.getOwnerId()==currentUser.getId()}">
     <div th:if="${currentUser != null}" class="content-wrapper mb-5">
         <div class="container">
             <div class="row justify-content-center">
