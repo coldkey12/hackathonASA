@@ -3,18 +3,13 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres?currentSchema=for_hackathons
+    url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
-    password: 12070107Don
+    password:
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-
-  data:
-    redis:
-      host: localhost
-      port: 6379
 
 openai:
   api:
