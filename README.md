@@ -13,6 +13,7 @@ This project is a web-based chat application that allows users to join group cha
 - PostgreSQL
 - Maven
 - OpenAI API Key
+- Docker
 
 ## Setup Instructions
 
@@ -20,3 +21,9 @@ This project is a web-based chat application that allows users to join group cha
 ```bash
 git clone https://github.com/coldkey12/hackathonASA.git
 cd group-chat-ai
+docker compose up --build
+```
+### 2. To stop the application
+```bash
+docker compose down
+```
